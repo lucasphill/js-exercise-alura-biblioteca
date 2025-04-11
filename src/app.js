@@ -1,36 +1,33 @@
 import express from "express";
+import dbConn from "./config/dbConnect.js";
+import livro from "./models/Livro.js";
+
+const conn = await dbConn(); // instancia uma conexão com o banco mongodb
+
+// caso o mongoose retorne um evento chamado error será executado a arrowfunc mostrando o erro no console
+conn.on("error", (erro) => {
+  console.error("Erro de conexão", erro);
+});
+
+conn.once("open", () => {
+  console.log("Conexão com MongoDB OK");
+});
 
 const app = express();
 app.use(express.json()); // converte body de todas as requisições para um json
-
-const livros = [
-  {
-    id: 1,
-    titulo: "The Witcher",
-  },
-  {
-    id: 2,
-    titulo: "The Game",
-  },
-];
-
-function buscaLivro(id) {
-  return livros.findIndex((livro) => {
-    return livro.id === Number(id);
-  });
-}
 
 app.get("/", (req, res) => {
   res.status(200).send("Curso de Node com express");
 });
 
-app.get("/livros", (req, res) => {
-  res.status(200).json(livros);
+app.get("/livros", async (req, res) => {
+  const listaLivros = await livro.find({});
+  res.status(200).json(listaLivros);
 });
 
-app.get("/livros/:id", (req, res) => {
-  const index = buscaLivro(req.params.id);
-  res.status(200).json(livros[index]);
+app.get("/livros/:id", async (req, res) => {
+  const listaLivro = await livro.findById(req.params.id);
+  res.status(200).json(listaLivro);
 });
 
 app.post("/livros", (req, res) => {
